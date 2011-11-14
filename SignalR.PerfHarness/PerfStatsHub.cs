@@ -15,6 +15,7 @@ namespace SignalR.PerfHarness
         private static int _broadcastSize = 32;
         private static string _broadcastPayload;
         private static object _broadcastTimerLock = new object();
+        private static bool _broadcastOnTightLoop = false;
         private static IConnection _connection = Connection.GetConnection<PerfEndpoint>();
 
         internal static void Init()
@@ -39,12 +40,24 @@ namespace SignalR.PerfHarness
         public void SetBroadcastInterval(int interval)
         {
             EnsureBroadcastTimer();
+            PerfStats.ResetAverage();
             if (interval <= 0)
             {
+                _broadcastOnTightLoop = false;
                 _broadcastTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                if (interval == -1)
+                {
+                    _broadcastOnTightLoop = true;
+                    // Go nuts
+                    while (_broadcastOnTightLoop)
+                    {
+                        _connection.Broadcast(_broadcastPayload);
+                    }
+                }
             }
             else
             {
+                _broadcastOnTightLoop = false;
                 _broadcastTimer.Change(interval, interval);
             }
             Clients.onIntervalChanged(interval);
@@ -55,6 +68,11 @@ namespace SignalR.PerfHarness
             _broadcastSize = size;
             _broadcastPayload = String.Join("", Enumerable.Range(0, size - 1).Select(i => "a"));
             Clients.onSizeChanged(size);
+        }
+
+        public void ResetAverage()
+        {
+            PerfStats.ResetAverage();
         }
 
         private static void EnsureBroadcastTimer()

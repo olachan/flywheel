@@ -43,6 +43,10 @@
                 <option value="4096">4096 bytes</option>
             </select>
         </div>
+
+        <div>
+            <a id="resetAvg" href="#">Reset average</a>
+        </div>
     </fieldset>
 
     <div id="stats">
@@ -88,6 +92,9 @@
             });
             $payloadSize.change(function () {
                 hub.setBroadcastSize($payloadSize.val());
+            });
+            $("#resetAvg").click(function () {
+                hub.resetAverage();
             });
         }
 
