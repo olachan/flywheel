@@ -1,31 +1,29 @@
 ﻿using System;
 using System.Linq;
 using System.Threading;
-using SignalR.Hubs;
-using System.Text;
 using System.Threading.Tasks;
+using SignalR.Hubs;
 
-namespace SignalR.PerfHarness
+namespace SignalR.Flywheel
 {
-    [HubName("perf")]
-    public class PerfStatsHub : Hub
+    [HubName("flywheel")]
+    public class StatsHub : Hub
     {
         private static readonly int _updateInterval = 500; //ms
         private static Timer _updateTimer;
         private static int _broadcastSize = 32;
         private static string _broadcastPayload;
-        private static bool _broadcasting = false;
         private static CancellationTokenSource _cts = new CancellationTokenSource();
-        private static IConnection _connection = Connection.GetConnection<PerfEndpoint>();
+        private static IConnection _connection = Connection.GetConnection<Shaft>();
 
         internal static void Init()
         {
-            PerfStats.Init();
-            var clients = Hub.GetClients<PerfStatsHub>();
+            Stats.Init();
+            var clients = Hub.GetClients<StatsHub>();
             _updateTimer = new Timer(_ =>
             {
                 // Broadcast updated stats
-                clients.updateStats(PerfStats.GetStats());
+                clients.updateStats(Stats.GetStats());
             }, null, _updateInterval, _updateInterval);
 
             GC.SuppressFinalize(_updateTimer);
@@ -35,23 +33,19 @@ namespace SignalR.PerfHarness
 
         public void SetOnReceive(EndpointBehavior behavior)
         {
-            PerfEndpoint.Behavior = behavior;
+            Shaft.Behavior = behavior;
             Clients.onReceiveChanged(behavior);
         }
 
         public void SetBroadcastInterval(int interval)
         {
-            PerfStats.ResetAverage();
+            Stats.ResetAverage();
             if (interval <= 0)
             {
-                //_broadcasting = false;
                 _cts.Cancel();
             }
             else
             {
-                //_broadcasting = true;
-                
-                // TODO: Use CancelationToken here instead of flag?
                 Task.Factory.StartNew(() =>
                 {
                     while (!_cts.IsCancellationRequested)
@@ -73,7 +67,7 @@ namespace SignalR.PerfHarness
 
         public void ResetAverage()
         {
-            PerfStats.ResetAverage();
+            Stats.ResetAverage();
         }
 
         private static void SetBroadcastPayload()

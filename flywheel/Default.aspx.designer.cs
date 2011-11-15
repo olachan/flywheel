@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SignalR.PerfHarness {
+namespace SignalR.Flywheel {
     
     
     public partial class Default {

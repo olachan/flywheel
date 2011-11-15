@@ -11,8 +11,8 @@
     <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SignalR.PerfHarness</RootNamespace>
-    <AssemblyName>SignalR.PerfHarness</AssemblyName>
+    <RootNamespace>SignalR.Flywheel</RootNamespace>
+    <AssemblyName>SignalR.Flywheel</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <UseIISExpress>true</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
@@ -95,21 +95,21 @@
     <Compile Include="Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
-    <Compile Include="PerfEndpoint.ashx.cs">
-      <DependentUpon>PerfEndpoint.ashx</DependentUpon>
+    <Compile Include="shaft.ashx.cs">
+      <DependentUpon>shaft.ashx</DependentUpon>
     </Compile>
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="PerfStatsHub.cs" />
-    <Compile Include="PerfStats.cs" />
+    <Compile Include="StatsHub.cs" />
+    <Compile Include="Stats.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Properties\PublishProfiles\Profile1.pubxml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="PerfEndpoint.ashx" />
+    <Content Include="shaft.ashx" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />

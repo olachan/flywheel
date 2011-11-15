@@ -1,9 +1,9 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Default.aspx.cs" Inherits="SignalR.PerfHarness.Default" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Default.aspx.cs" Inherits="SignalR.Flywheel.Default" %>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
     <meta http-equiv="X-UA-Compatibility" content="IE=Edge" />
-    <title>SignalR Performance Harness</title>
+    <title>SignalR Flywheel</title>
     <style>
         body { font-family: 'Segoe UI'; padding: 5px 20px; }
         h1, h2, h3, h4, h5 { font-family: 'Segoe UI'; font-weight: normal; }
@@ -16,7 +16,7 @@
     </style>
 </head>
 <body>
-    <h1>SignalR Performance Harness</h1>
+    <h1>SignalR Flywheel</h1>
     
     <fieldset id="options"><legend>Endpoint Options</legend>
         <div>
@@ -60,7 +60,7 @@
     <script src="signalr/hubs"></script>
     <script>
 
-        var hub = $.connection.perf,
+        var hub = $.connection.flywheel,
             $stats = $("#stats"),
             $onReceive = $("#onReceive"),
             $interval = $("#interval"),

@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using SignalR.Transports;
-using System.Text;
 using System.Collections.Concurrent;
+using System.Text;
+using System.Threading;
+using SignalR.Transports;
 
-namespace SignalR.PerfHarness
+namespace SignalR.Flywheel
 {
-    internal static class PerfStats
+    internal static class Stats
     {
         private static DateTime _avgCalcStart;
         private static long _avgLastSentCount;

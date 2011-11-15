@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
-namespace SignalR.PerfHarness
+﻿
+namespace SignalR.Flywheel
 {
-    public class PerfEndpoint : PersistentConnection
+    public class Shaft : PersistentConnection
     {
         internal static EndpointBehavior Behavior { get; set; }
-
-
 
         protected override void OnReceived(string clientId, string data)
         {
