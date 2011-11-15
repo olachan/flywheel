@@ -2,6 +2,7 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
+    <meta http-equiv="X-UA-Compatibility" content="IE=Edge" />
     <title>SignalR Performance Harness</title>
     <style>
         body { font-family: 'Segoe UI'; padding: 5px 20px; }
@@ -68,6 +69,9 @@
         hub.updateStats = function (stats) {
             $stats.empty();
             $.each(stats, function (key, value) {
+                if (typeof value === "number") {
+                    value = value.toFixed(2);
+                }
                 $stats.append("<div><strong>" + key + ":</strong><span>" + value.toLocaleString() + "</span></div>");
             });
         };

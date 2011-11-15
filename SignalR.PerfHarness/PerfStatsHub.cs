@@ -15,6 +15,7 @@ namespace SignalR.PerfHarness
         private static int _broadcastSize = 32;
         private static string _broadcastPayload;
         private static bool _broadcasting = false;
+        private static CancellationTokenSource _cts = new CancellationTokenSource();
         private static IConnection _connection = Connection.GetConnection<PerfEndpoint>();
 
         internal static void Init()
@@ -43,20 +44,22 @@ namespace SignalR.PerfHarness
             PerfStats.ResetAverage();
             if (interval <= 0)
             {
-                _broadcasting = false;
+                //_broadcasting = false;
+                _cts.Cancel();
             }
             else
             {
-                _broadcasting = true;
+                //_broadcasting = true;
+                
                 // TODO: Use CancelationToken here instead of flag?
                 Task.Factory.StartNew(() =>
                 {
-                    while (_broadcasting)
+                    while (!_cts.IsCancellationRequested)
                     {
                         _connection.Broadcast(_broadcastPayload);
                         Thread.Sleep(interval);
                     }
-                });
+                }, _cts.Token);
             }
             Clients.onIntervalChanged(interval);
         }

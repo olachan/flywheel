@@ -17,3 +17,4 @@ packages/*
 artifacts/*
 msbuild.log
 PublishProfiles/
+*.Publish.xml
