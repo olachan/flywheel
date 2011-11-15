@@ -13,7 +13,11 @@ namespace SignalR.PerfHarness
 
         protected override void OnReceived(string clientId, string data)
         {
-            if (Behavior == EndpointBehavior.Echo)
+            if (Behavior == EndpointBehavior.DirectEcho)
+            {
+                Send(data);
+            }
+            else if (Behavior == EndpointBehavior.Echo)
             {
                 Connection.Send(data);
             }
@@ -27,6 +31,7 @@ namespace SignalR.PerfHarness
     public enum EndpointBehavior
     {
         ListenOnly,
+        DirectEcho,
         Echo,
         Broadcast
     }

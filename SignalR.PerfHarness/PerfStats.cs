@@ -33,14 +33,21 @@ namespace SignalR.PerfHarness
                 }
                 _measuringRate = true;
 
-                var sent = Interlocked.Read(ref Sent);
                 var now = DateTime.UtcNow;
                 var timeDiffSecs = (now - _lastRateRead).TotalSeconds;
+
+                var sent = Interlocked.Read(ref Sent);
                 var sendDiff = sent - _lastSendCount;
                 var sendsPerSec = sendDiff / timeDiffSecs;
                 SentPerSecond = sendsPerSec;
-                
+
+                var recv = Interlocked.Read(ref Received);
+                var recvDiff = recv - _lastReceivedCount;
+                var recvPerSec = recvDiff / timeDiffSecs;
+                ReceivedPerSecond = recvPerSec;
+
                 _lastSendCount = sent;
+                _lastReceivedCount = recv;
                 _lastRateRead = now;
 
                 // Update average

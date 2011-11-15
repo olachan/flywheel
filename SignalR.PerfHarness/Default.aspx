@@ -22,8 +22,9 @@
             <label for="onReceive">On receive:</label>
             <select id="onReceive">
                 <option value="0">Listen only</option>
-                <option value="1">Echo</option>
-                <option value="2">Broadcast</option>
+                <option value="1">DirectEcho</option>
+                <option value="2">Echo</option>
+                <option value="3">Broadcast</option>
             </select>
         </div>
 

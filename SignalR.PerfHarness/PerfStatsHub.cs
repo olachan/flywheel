@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using SignalR.Hubs;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace SignalR.PerfHarness
 {
@@ -11,24 +12,24 @@ namespace SignalR.PerfHarness
     {
         private static readonly int _updateInterval = 500; //ms
         private static Timer _updateTimer;
-        private static Timer _broadcastTimer;
         private static int _broadcastSize = 32;
         private static string _broadcastPayload;
-        private static object _broadcastTimerLock = new object();
-        private static bool _broadcastOnTightLoop = false;
+        private static bool _broadcasting = false;
         private static IConnection _connection = Connection.GetConnection<PerfEndpoint>();
 
         internal static void Init()
         {
             PerfStats.Init();
+            var clients = Hub.GetClients<PerfStatsHub>();
             _updateTimer = new Timer(_ =>
             {
                 // Broadcast updated stats
-                var clients = Hub.GetClients<PerfStatsHub>();
                 clients.updateStats(PerfStats.GetStats());
             }, null, _updateInterval, _updateInterval);
-            
+
             GC.SuppressFinalize(_updateTimer);
+
+            SetBroadcastPayload();
         }
 
         public void SetOnReceive(EndpointBehavior behavior)
@@ -39,26 +40,23 @@ namespace SignalR.PerfHarness
 
         public void SetBroadcastInterval(int interval)
         {
-            EnsureBroadcastTimer();
             PerfStats.ResetAverage();
             if (interval <= 0)
             {
-                _broadcastOnTightLoop = false;
-                _broadcastTimer.Change(Timeout.Infinite, Timeout.Infinite);
-                if (interval == -1)
-                {
-                    _broadcastOnTightLoop = true;
-                    // Go nuts
-                    while (_broadcastOnTightLoop)
-                    {
-                        _connection.Broadcast(_broadcastPayload);
-                    }
-                }
+                _broadcasting = false;
             }
             else
             {
-                _broadcastOnTightLoop = false;
-                _broadcastTimer.Change(interval, interval);
+                _broadcasting = true;
+                // TODO: Use CancelationToken here instead of flag?
+                Task.Factory.StartNew(() =>
+                {
+                    while (_broadcasting)
+                    {
+                        _connection.Broadcast(_broadcastPayload);
+                        Thread.Sleep(interval);
+                    }
+                });
             }
             Clients.onIntervalChanged(interval);
         }
@@ -66,7 +64,7 @@ namespace SignalR.PerfHarness
         public void SetBroadcastSize(int size)
         {
             _broadcastSize = size;
-            _broadcastPayload = String.Join("", Enumerable.Range(0, size - 1).Select(i => "a"));
+            SetBroadcastPayload();
             Clients.onSizeChanged(size);
         }
 
@@ -75,19 +73,9 @@ namespace SignalR.PerfHarness
             PerfStats.ResetAverage();
         }
 
-        private static void EnsureBroadcastTimer()
+        private static void SetBroadcastPayload()
         {
-            if (_broadcastTimer == null)
-            {
-                lock (_broadcastTimerLock)
-                {
-                    if (_broadcastTimer == null)
-                    {
-                        _broadcastTimer = new Timer(_ => _connection.Broadcast(_broadcastPayload), null, Timeout.Infinite, Timeout.Infinite);
-                        GC.SuppressFinalize(_broadcastTimer);
-                    }
-                }
-            }
+            _broadcastPayload = String.Join("", Enumerable.Range(0, _broadcastSize - 1).Select(i => "a"));
         }
     }
 }
