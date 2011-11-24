@@ -13,8 +13,9 @@ namespace SignalR.Flywheel
         private static Timer _updateTimer;
         private static int _broadcastSize = 32;
         private static string _broadcastPayload;
-        private static CancellationTokenSource _cts = new CancellationTokenSource();
+        private static CancellationTokenSource _cts;
         private static IConnection _connection = Connection.GetConnection<Shaft>();
+        private static Task _broadcastTask;
 
         internal static void Init()
         {
@@ -37,25 +38,38 @@ namespace SignalR.Flywheel
             Clients.onReceiveChanged(behavior);
         }
 
-        public void SetBroadcastInterval(int interval)
+        public void SetBroadcastRate(double rate)
         {
+            // rate is messages per second
             Stats.ResetAverage();
-            if (interval <= 0)
+            if (_cts != null)
             {
                 _cts.Cancel();
+                if (_broadcastTask != null)
+                {
+                    _broadcastTask.Wait();
+                }
             }
-            else
+            if (rate > 0)
             {
-                Task.Factory.StartNew(() =>
+                var interval = TimeSpan.FromMilliseconds(1000 / rate);
+                if (_cts != null)
+                {
+                    _cts.Dispose();
+                }
+                
+                _cts = new CancellationTokenSource();
+                _broadcastTask = Task.Factory.StartNew(() =>
                 {
                     while (!_cts.IsCancellationRequested)
                     {
                         _connection.Broadcast(_broadcastPayload);
                         Thread.Sleep(interval);
                     }
-                }, _cts.Token);
+                }, TaskCreationOptions.LongRunning);
+
             }
-            Clients.onIntervalChanged(interval);
+            Clients.onRateChanged(rate);
         }
 
         public void SetBroadcastSize(int size)

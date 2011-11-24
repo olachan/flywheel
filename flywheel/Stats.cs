@@ -55,30 +55,30 @@ namespace SignalR.Flywheel
 
                 // Update tracked connected clients
                 ConnectedClientsTracking = _connectedClients.Count;
-
+                
                 _measuringRate = false;
             }, null, 1000, 1000);
 
-            PersistentConnection.ClientConnected += (s) =>
-            {
-                //Task.Factory.StartNew(() =>
-                //{
-                _connectedClients.TryAdd(s, null);
-                    Interlocked.Increment(ref Connects);
-                    Interlocked.Increment(ref ConnectedClients);
-                //});
-            };
+            //PersistentConnection.ClientConnected += (s) =>
+            //{
+            //    //Task.Factory.StartNew(() =>
+            //    //{
+            //    _connectedClients.TryAdd(s, null);
+            //        Interlocked.Increment(ref Connects);
+            //        Interlocked.Increment(ref ConnectedClients);
+            //    //});
+            //};
 
-            PersistentConnection.ClientDisconnected += (s) =>
-            {
-                //Task.Factory.StartNew(() =>
-                //{
-                    object client;
-                    _connectedClients.TryRemove(s, out client);
-                    Interlocked.Increment(ref Disconnects);
-                    Interlocked.Decrement(ref ConnectedClients);
-                //});
-            };
+            //PersistentConnection.ClientDisconnected += (s) =>
+            //{
+            //    //Task.Factory.StartNew(() =>
+            //    //{
+            //        object client;
+            //        _connectedClients.TryRemove(s, out client);
+            //        Interlocked.Increment(ref Disconnects);
+            //        Interlocked.Decrement(ref ConnectedClients);
+            //    //});
+            //};
 
             //PersistentConnection.Sending += () =>
             //{
@@ -135,6 +135,13 @@ namespace SignalR.Flywheel
             _avgCalcStart = DateTime.UtcNow;
             _avgLastSentCount = 0;
             _avgLastReceivedCount = 0;
+        }
+
+        public static ConcurrentDictionary<string, object> ConnectedClientsIds
+        {
+            get {
+                return _connectedClients;
+            }
         }
 
         public static long Sent;

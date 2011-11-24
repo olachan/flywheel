@@ -2,14 +2,14 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <meta http-equiv="X-UA-Compatibility" content="IE=Edge" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <title>SignalR Flywheel</title>
     <style>
         body { font-family: 'Segoe UI'; padding: 5px 20px; }
         h1, h2, h3, h4, h5 { font-family: 'Segoe UI'; font-weight: normal; }
         #options { margin-bottom: 24px; width: 400px; padding: 6px 12px; }
         #options label { display: block; float: left; width: 150px;  }
-        #interval { width: 50px; }
+        #rate { width: 50px; }
         #stats div { clear: both; font-size: 18px; margin-left: 50px; }
         #stats strong { display: block; float: left; width: 150px; }
         #stats span { display: block; float: left; width: 150px; text-align: right; }
@@ -30,8 +30,8 @@
         </div>
 
         <div>
-            <label for="interval">Broadcast interval:</label>
-            <input id="interval" value="0" maxlength="6" /> (0 = disabled)
+            <label for="rate">Broadcast rate:</label>
+            <input id="rate" value="0" maxlength="5" /> (per second)
         </div>
 
         <div>
@@ -63,7 +63,7 @@
         var hub = $.connection.flywheel,
             $stats = $("#stats"),
             $onReceive = $("#onReceive"),
-            $interval = $("#interval"),
+            $rate = $("#rate"),
             $payloadSize = $("#payloadSize");
 
         hub.updateStats = function (stats) {
@@ -80,8 +80,8 @@
             $onReceive.val(behavior);
         };
 
-        hub.onIntervalChanged = function (interval) {
-            $interval.val(interval);
+        hub.onRateChanged = function (rate) {
+            $rate.val(rate);
         };
 
         hub.onSizeChanged = function (size) {
@@ -92,8 +92,8 @@
             $onReceive.change(function () {
                 hub.setOnReceive($onReceive.val());
             });
-            $interval.change(function () {
-                hub.setBroadcastInterval($interval.val());
+            $rate.change(function () {
+                hub.setBroadcastRate($rate.val());
             });
             $payloadSize.change(function () {
                 hub.setBroadcastSize($payloadSize.val());
