@@ -11,7 +11,7 @@
         #options label { display: block; float: left; width: 150px;  }
         #rate { width: 50px; }
         #stats div { clear: both; font-size: 18px; margin-left: 50px; }
-        #stats strong { display: block; float: left; width: 150px; }
+        #stats strong { display: block; float: left; width: 250px; }
         #stats span { display: block; float: left; width: 150px; text-align: right; }
     </style>
 </head>
