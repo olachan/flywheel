@@ -84,6 +84,12 @@ namespace SignalR.Flywheel
             Stats.ResetAverage();
         }
 
+        public void ForceGC()
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+        }
+
         private static void SetBroadcastPayload()
         {
             _broadcastPayload = String.Join("", Enumerable.Range(0, _broadcastSize - 1).Select(i => "a"));

@@ -48,6 +48,7 @@
 
         <div>
             <a id="resetAvg" href="#">Reset average</a>
+            <a id="forceGC" href="#">Force GC</a>
         </div>
     </fieldset>
 
@@ -98,8 +99,25 @@
             $payloadSize.change(function () {
                 hub.setBroadcastSize($payloadSize.val());
             });
-            $("#resetAvg").click(function () {
+            $("#resetAvg").click(function (e) {
+                e.preventDefault();
                 hub.resetAverage();
+            });
+            $("#forceGC").click(function (e) {
+                /// <param name="e" type="jQuery.Event">Description</param>
+                var link = $("#forceGC"),
+                    text = link.text(),
+                    href = link.prop("href");
+
+                e.preventDefault();
+
+                link.text("Collecting...")
+                    .prop("href", "");
+
+                hub.forceGC().done(function () {
+                    link.text(text)
+                        .prop("href", href);
+                });
             });
         }
 

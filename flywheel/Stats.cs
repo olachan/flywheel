@@ -35,35 +35,53 @@ namespace SignalR.Flywheel
                 }
                 _measuringRate = true;
 
-                var now = DateTime.UtcNow;
-                var timeDiffSecs = (now - _lastRateRead).TotalSeconds;
+                try
+                {
+                    var now = DateTime.UtcNow;
+                    var timeDiffSecs = (now - _lastRateRead).TotalSeconds;
 
-                var sent = Interlocked.Read(ref Sent);
-                var sendDiff = sent - _lastSendCount;
-                var sendsPerSec = sendDiff / timeDiffSecs;
-                SentPerSecond = sendsPerSec;
+                    if (timeDiffSecs <= 0)
+                        return;
 
-                var recv = Interlocked.Read(ref Received);
-                var recvDiff = recv - _lastReceivedCount;
-                var recvPerSec = recvDiff / timeDiffSecs;
-                ReceivedPerSecond = recvPerSec;
+                    var sent = Interlocked.Read(ref Sent);
+                    var sendDiff = sent - _lastSendCount;
+                    var sendsPerSec = sendDiff / timeDiffSecs;
+                    SendsPerSecond = sendsPerSec;
 
-                _lastSendCount = sent;
-                _lastReceivedCount = recv;
-                _lastRateRead = now;
+                    var recv = Interlocked.Read(ref Received);
+                    var recvDiff = recv - _lastReceivedCount;
+                    var recvPerSec = recvDiff / timeDiffSecs;
+                    ReceivesPerSecond = recvPerSec;
 
-                // Update average
-                AvgSentPerSecond = _avgLastSentCount / (now - _avgCalcStart).TotalSeconds;
-                AvgReceivedPerSecond = _avgLastReceivedCount / (now - _avgCalcStart).TotalSeconds;
+                    _lastSendCount = sent;
+                    _lastReceivedCount = recv;
+                    _lastRateRead = now;
 
-                // Update tracked connected clients
-                ConnectedClientsTracking = _connectedClients.Count;
+                    // Update the peak
+                    if (sendsPerSec < long.MaxValue && sendsPerSec > PeakSendsPerSecond)
+                    {
+                        Interlocked.Exchange(ref PeakSendsPerSecond, sendsPerSec);
+                    }
+                    if (recvPerSec < long.MaxValue && recvPerSec > PeakReceivesPerSecond)
+                    {
+                        Interlocked.Exchange(ref PeakReceivesPerSecond, recvPerSec);
+                    }
 
-                MessageStoreSize = _messageStore.Value.CurrentMessageCount(); 
+                    // Update average
+                    AvgSendsPerSecond = _avgLastSentCount / (now - _avgCalcStart).TotalSeconds;
+                    AvgReceivesPerSecond = _avgLastReceivedCount / (now - _avgCalcStart).TotalSeconds;
 
-                _measuringRate = false;
+                    // Update tracked connected clients
+                    ConnectedClientsTracking = _connectedClients.Count;
+
+                    MessageStoreSize = _messageStore.Value.CurrentMessageCount(); 
+                }
+                finally
+                {
+                    _measuringRate = false;
+                }
             }, null, 1000, 1000);
-
+            
             //PersistentConnection.ClientConnected += (s) =>
             //{
             //    //Task.Factory.StartNew(() =>
@@ -121,7 +139,7 @@ namespace SignalR.Flywheel
 
             var onSending = new Action<string>(payload =>
             {
-                var payloadSize = Encoding.UTF8.GetBytes(payload).Length;
+                var payloadSize = Encoding.UTF8.GetByteCount(payload);
                 Interlocked.Add(ref BytesSent, payloadSize);
                 Interlocked.Add(ref BytesTotal, payloadSize);
                 Interlocked.Increment(ref Sent);
@@ -130,7 +148,7 @@ namespace SignalR.Flywheel
 
             var onReceving = new Action<string>(payload =>
             {
-                var payloadSize = Encoding.UTF8.GetBytes(payload).Length;
+                var payloadSize = Encoding.UTF8.GetByteCount(payload);
                 Interlocked.Add(ref BytesReceived, payloadSize);
                 Interlocked.Add(ref BytesTotal, payloadSize);
                 Interlocked.Increment(ref Received);
@@ -163,11 +181,13 @@ namespace SignalR.Flywheel
 
         public static long Sent;
         public static long Received;
-        public static double SentPerSecond;
-        public static double ReceivedPerSecond;
+        public static double SendsPerSecond;
+        public static double ReceivesPerSecond;
         public static double TotalPerSecond;
-        public static double AvgSentPerSecond;
-        public static double AvgReceivedPerSecond;
+        public static double AvgSendsPerSecond;
+        public static double AvgReceivesPerSecond;
+        public static double PeakSendsPerSecond;
+        public static double PeakReceivesPerSecond;
         public static long ConnectionsReturnedImmediately;
         public static long ConnectionsSubscribedToSignal;
         public static long BytesSent;
@@ -185,11 +205,13 @@ namespace SignalR.Flywheel
             {
                 Sent,
                 Received,
-                SentPerSecond,
-                ReceivedPerSecond,
+                SendsPerSecond,
+                ReceivesPerSecond,
                 TotalPerSecond,
-                AvgSentPerSecond,
-                AvgReceivedPerSecond,
+                AvgSentPerSecond = AvgSendsPerSecond,
+                AvgReceivedPerSecond = AvgReceivesPerSecond,
+                PeakSentPerSecond = PeakSendsPerSecond,
+                PeakReceivedPerSecond = PeakReceivesPerSecond,
                 BytesSent,
                 BytesReceived,
                 BytesTotal,
