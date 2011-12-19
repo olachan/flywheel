@@ -3,15 +3,16 @@ using System.Collections.Concurrent;
 using System.Text;
 using System.Threading;
 using SignalR.Transports;
+using System.Diagnostics;
 
 namespace SignalR.Flywheel
 {
     internal static class Stats
     {
+        private static Stopwatch _sw = Stopwatch.StartNew();
         private static DateTime _avgCalcStart;
         private static long _avgLastSentCount;
         private static long _avgLastReceivedCount;
-        private static DateTime _lastRateRead = DateTime.UtcNow;
         private static long _lastSendCount;
         private static long _lastReceivedCount;
         private static bool _measuringRate;
@@ -26,6 +27,8 @@ namespace SignalR.Flywheel
             ResetAverage();
             
             _connectedClients = new ConcurrentDictionary<string, object>();
+            
+            _sw.Start();
 
             _rateCounter = new Timer(_ =>
             {
@@ -38,7 +41,8 @@ namespace SignalR.Flywheel
                 try
                 {
                     var now = DateTime.UtcNow;
-                    var timeDiffSecs = (now - _lastRateRead).TotalSeconds;
+                    var timeDiffSecs = _sw.Elapsed.TotalSeconds;
+                    _sw.Restart();
 
                     if (timeDiffSecs <= 0)
                         return;
@@ -55,7 +59,6 @@ namespace SignalR.Flywheel
 
                     _lastSendCount = sent;
                     _lastReceivedCount = recv;
-                    _lastRateRead = now;
 
                     // Update the peak
                     if (sendsPerSec < long.MaxValue && sendsPerSec > PeakSendsPerSecond)
@@ -155,12 +158,12 @@ namespace SignalR.Flywheel
                 Interlocked.Increment(ref _avgLastReceivedCount);
             });
 
-            ServerSentEventsTransport.Sending += onSending;
-            ForeverFrameTransport.Sending += onSending;
+            // ForeverTransport covers ServerSentEvents & ForeverFrames transports too
+            ForeverTransport.Sending += onSending;
             LongPollingTransport.Sending += onSending;
 
-            ServerSentEventsTransport.Receiving += onReceving;
-            ForeverFrameTransport.Receiving += onReceving;
+            // ForeverTransport covers ServerSentEvents & ForeverFrames transports too
+            ForeverTransport.Receiving += onReceving;
             LongPollingTransport.Receiving += onReceving;
         }
 

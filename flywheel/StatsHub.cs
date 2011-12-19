@@ -9,7 +9,7 @@ namespace SignalR.Flywheel
     [HubName("flywheel")]
     public class StatsHub : Hub
     {
-        private static readonly int _updateInterval = 500; //ms
+        private static readonly int _updateInterval = 1000; //ms
         private static Timer _updateTimer;
         private static int _broadcastSize = 32;
         private static string _broadcastPayload;
@@ -26,8 +26,6 @@ namespace SignalR.Flywheel
                 // Broadcast updated stats
                 clients.updateStats(Stats.GetStats());
             }, null, _updateInterval, _updateInterval);
-
-            GC.SuppressFinalize(_updateTimer);
 
             SetBroadcastPayload();
         }
@@ -50,7 +48,7 @@ namespace SignalR.Flywheel
                     _broadcastTask.Wait();
                 }
             }
-            if (rate > 0)
+            if (rate > 0 || rate < 0)
             {
                 var interval = TimeSpan.FromMilliseconds(1000 / rate);
                 if (_cts != null)
@@ -59,14 +57,32 @@ namespace SignalR.Flywheel
                 }
                 
                 _cts = new CancellationTokenSource();
-                _broadcastTask = Task.Factory.StartNew(() =>
+
+                TaskCompletionSource<object> broadcastTcs = new TaskCompletionSource<object>();
+                _broadcastTask = broadcastTcs.Task;
+
+                ThreadPool.QueueUserWorkItem(_ =>
                 {
-                    while (!_cts.IsCancellationRequested)
+                    try
                     {
-                        _connection.Broadcast(_broadcastPayload);
-                        Thread.Sleep(interval);
+                        while (!_cts.IsCancellationRequested)
+                        {
+                            var t = _connection.Broadcast(_broadcastPayload);
+                            if (rate > 0)
+                            {
+                                Thread.Sleep(interval);
+                            }
+                            else if (rate < 0)
+                            {
+                                t.Wait();
+                            }
+                        }
                     }
-                }, TaskCreationOptions.LongRunning);
+                    finally
+                    {
+                        broadcastTcs.TrySetResult(null);
+                    }
+                });
 
             }
             Clients.onRateChanged(rate);
