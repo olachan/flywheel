@@ -18,9 +18,9 @@ namespace SignalR.Flywheel
         private static bool _measuringRate;
         private static Timer _rateCounter;
         private static ConcurrentDictionary<string, object> _connectedClients;
-        private static Lazy<InProcessMessageStore> _messageStore =
-            new Lazy<InProcessMessageStore>(() =>
-                (InProcessMessageStore)SignalR.Infrastructure.DependencyResolver.Resolve<IMessageStore>());
+        private static Lazy<InProcessMessageBus> _messageBus =
+            new Lazy<InProcessMessageBus>(() =>
+                (InProcessMessageBus)SignalR.Global.DependencyResolver.Resolve<IMessageBus>());
 
         public static void Init()
         {
@@ -77,7 +77,7 @@ namespace SignalR.Flywheel
                     // Update tracked connected clients
                     ConnectedClientsTracking = _connectedClients.Count;
 
-                    MessageStoreSize = _messageStore.Value.CurrentMessageCount(); 
+                    //MessageStoreSize = _messageBus.Value.CurrentMessageCount(); 
                 }
                 finally
                 {
@@ -130,15 +130,15 @@ namespace SignalR.Flywheel
             //    //});
             //};
 
-            Connection.MessagesPending += (sender, args) =>
-            {
-                Interlocked.Increment(ref ConnectionsReturnedImmediately);
-            };
+            //Connection.MessagesPending += (sender, args) =>
+            //{
+            //    Interlocked.Increment(ref ConnectionsReturnedImmediately);
+            //};
 
-            Connection.WaitingForSignal += (sender, args) =>
-            {
-                Interlocked.Increment(ref ConnectionsSubscribedToSignal);
-            };
+            //Connection.WaitingForSignal += (sender, args) =>
+            //{
+            //    Interlocked.Increment(ref ConnectionsSubscribedToSignal);
+            //};
 
             var onSending = new Action<string>(payload =>
             {

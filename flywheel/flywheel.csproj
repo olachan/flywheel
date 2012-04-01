@@ -22,6 +22,10 @@
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
     <OldToolsVersion>4.0</OldToolsVersion>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -51,11 +55,21 @@
       <Private>True</Private>
       <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.4.0.4\lib\net40\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Newtonsoft.Json.4.5.1\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="SignalR, Version=0.3.6.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SignalR.Server.0.3.6\lib\net40\SignalR.dll</HintPath>
+    <Reference Include="SignalR, Version=0.5.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\SignalR.Server.0.5.0.0\lib\net40\SignalR.dll</HintPath>
+    </Reference>
+    <Reference Include="SignalR.Hosting.AspNet, Version=0.5.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\SignalR.Hosting.AspNet.0.5.0.0\lib\net40\SignalR.Hosting.AspNet.dll</HintPath>
+    </Reference>
+    <Reference Include="SignalR.Hosting.Common, Version=0.5.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\SignalR.Hosting.Common.0.5.0.0\lib\net40\SignalR.Hosting.Common.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -76,10 +90,10 @@
   <ItemGroup>
     <Content Include="Default.aspx" />
     <Content Include="MiniCrank.html" />
-    <Content Include="Scripts\jquery-1.6.4-vsdoc.js" />
-    <Content Include="Scripts\jquery-1.6.4.js" />
-    <Content Include="Scripts\jquery-1.6.4.min.js" />
     <Content Include="Global.asax" />
+    <Content Include="Scripts\jquery-1.7.1-vsdoc.js" />
+    <Content Include="Scripts\jquery-1.7.1.js" />
+    <Content Include="Scripts\jquery-1.7.1.min.js" />
     <Content Include="Scripts\jquery.signalR.js" />
     <Content Include="Scripts\jquery.signalR.min.js" />
     <Content Include="Web.config">
@@ -106,15 +120,14 @@
     <Compile Include="Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
-    <Compile Include="shaft.ashx.cs">
-      <DependentUpon>shaft.ashx</DependentUpon>
-    </Compile>
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Shaft.cs" />
     <Compile Include="StatsHub.cs" />
     <Compile Include="Stats.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TaskHelpers.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
@@ -122,9 +135,7 @@
     <Content Include="QueryString.ashx" />
     <None Include="Properties\PublishProfiles\Profile1.pubxml" />
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="shaft.ashx" />
-  </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
@@ -158,4 +169,20 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <Target Name="RestoreSignalR" BeforeTargets="RestorePackages">
+    <PropertyGroup>
+      <SignalRRepoPath>$(SolutionDir)..\SignalR\</SignalRRepoPath>
+      <_SignalRPackagePath>$(SignalRRepoPath)\artifacts\$(Configuration)</_SignalRPackagePath>
+      <SignalRPackagePath>$([System.IO.Path]::GetFullPath('$(_SignalRPackagePath)'))</SignalRPackagePath>
+      <SignalRInstallCommand>"$(NuGetExePath)" install SignalR -source "$(SignalRPackagePath);https://go.microsoft.com/fwlink/?LinkID=230477" -o "$(PackagesDir)"</SignalRInstallCommand>
+    </PropertyGroup>
+    <Message Text="Restoring SignalR package from local source $(SignalRPackagePath)" />
+    <ItemGroup>
+      <SignalRPackageFiles Include="$(PackagesDir)\SignalR.*\**\*" />
+    </ItemGroup>
+    <Message Text="Deleting current SignalR package $(SignalRPackageFiles)" />
+    <Delete Files="@(SignalRPackageFiles)" />
+    <Message Text="Running $(SignalRInstallCommand)" />
+    <Exec Command="$(SignalRInstallCommand)" Condition="Exists('$(SignalRPackagePath)')" />
+  </Target>
 </Project>

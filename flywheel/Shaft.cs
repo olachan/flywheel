@@ -1,5 +1,6 @@
 ﻿using System.Threading;
-using System.Web;
+using System.Threading.Tasks;
+using SignalR.Hosting;
 
 namespace SignalR.Flywheel
 {
@@ -7,22 +8,24 @@ namespace SignalR.Flywheel
     {
         internal static EndpointBehavior Behavior { get; set; }
 
-        protected override void OnConnected(HttpContextBase context, string clientId)
+        protected override Task OnConnectedAsync(IRequest request, string connectionId)
         {
-            Stats.ConnectedClientsIds.TryAdd(clientId, null);
+            Stats.ConnectedClientsIds.TryAdd(connectionId, null);
             Interlocked.Increment(ref Stats.Connects);
             Interlocked.Increment(ref Stats.ConnectedClients);
+            return TaskHelpers.Done;
         }
 
-        protected override void OnDisconnect(string clientId)
+        protected override Task OnDisconnectAsync(string connectionId)
         {
             object client;
-            Stats.ConnectedClientsIds.TryRemove(clientId, out client);
+            Stats.ConnectedClientsIds.TryRemove(connectionId, out client);
             Interlocked.Increment(ref Stats.Disconnects);
             Interlocked.Decrement(ref Stats.ConnectedClients);
+            return TaskHelpers.Done;
         }
 
-        protected override void OnReceived(string clientId, string data)
+        protected override Task OnReceivedAsync(string connectionId, string data)
         {
             if (Behavior == EndpointBehavior.DirectEcho)
             {
@@ -36,6 +39,7 @@ namespace SignalR.Flywheel
             {
                 Connection.Broadcast(data);
             }
+            return TaskHelpers.Done;
         }
     }
 

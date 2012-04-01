@@ -14,13 +14,13 @@ namespace SignalR.Flywheel
         private static int _broadcastSize = 32;
         private static string _broadcastPayload;
         private static CancellationTokenSource _cts;
-        private static IConnection _connection = Connection.GetConnection<Shaft>();
+        private static IConnection _connection = SignalR.Global.Connections.GetConnection<Shaft>();
         private static Task _broadcastTask;
 
         internal static void Init()
         {
             Stats.Init();
-            var clients = Hub.GetClients<StatsHub>();
+            var clients = SignalR.Global.Connections.GetClients<StatsHub>();
             _updateTimer = new Timer(_ =>
             {
                 // Broadcast updated stats

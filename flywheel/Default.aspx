@@ -56,7 +56,7 @@
         
     </div>
 
-    <script src="Scripts/jquery-1.6.4.js" type="text/javascript"></script>
+    <script src="Scripts/jquery-1.7.1.js" type="text/javascript"></script>
     <script src="Scripts/jquery.signalR.js" type="text/javascript"></script>
     <script src="signalr/hubs"></script>
     <script>
