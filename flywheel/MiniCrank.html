@@ -21,18 +21,18 @@
         <input id="go" type="button" value="Go" />
     </div>
 
-    <script src="Scripts/jquery-1.6.4.js"></script>
-    <script src="Scripts/jquery.signalR.js"></script>
+    <script src="Scripts/jquery-1.7.2.js"></script>
+    <script src="Scripts/jquery.signalR-0.5pre.js"></script>
     <script>
         (function () {
             var connection = $.connection("shaft"),
-            connected = false,
-            $status = $("#status"),
-            $disconnect = $("#disconnect"),
-            $interval = $("#interval"),
-            $go = $("#go"),
-            payload = "01234567890123456789012345678901", // 32 chars
-            interval = null;
+                connected = false,
+                $status = $("#status"),
+                $disconnect = $("#disconnect"),
+                $interval = $("#interval"),
+                $go = $("#go"),
+                payload = "01234567890123456789012345678901", // 32 chars
+                interval = null;
 
             function connect() {
                 $status
