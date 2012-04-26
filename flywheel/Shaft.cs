@@ -27,13 +27,9 @@ namespace SignalR.Flywheel
 
         protected override Task OnReceivedAsync(string connectionId, string data)
         {
-            if (Behavior == EndpointBehavior.DirectEcho)
+            if (Behavior == EndpointBehavior.Echo)
             {
                 Send(data);
-            }
-            else if (Behavior == EndpointBehavior.Echo)
-            {
-                Connection.Send(data);
             }
             else if (Behavior == EndpointBehavior.Broadcast)
             {
@@ -46,7 +42,6 @@ namespace SignalR.Flywheel
     public enum EndpointBehavior
     {
         ListenOnly,
-        DirectEcho,
         Echo,
         Broadcast
     }

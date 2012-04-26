@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Text;
 using System.Threading;
 using SignalR.Transports;
-using System.Diagnostics;
 
 namespace SignalR.Flywheel
 {
@@ -20,7 +20,7 @@ namespace SignalR.Flywheel
         private static ConcurrentDictionary<string, object> _connectedClients;
         private static Lazy<InProcessMessageBus> _messageBus =
             new Lazy<InProcessMessageBus>(() =>
-                (InProcessMessageBus)SignalR.Global.DependencyResolver.Resolve<IMessageBus>());
+                (InProcessMessageBus)GlobalHost.DependencyResolver.Resolve<IMessageBus>());
 
         public static void Init()
         {

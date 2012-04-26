@@ -5,9 +5,11 @@
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <title>SignalR Flywheel</title>
     <style>
-        body { font-family: 'Segoe UI'; padding: 5px 20px; }
-        h1, h2, h3, h4, h5 { font-family: 'Segoe UI'; font-weight: normal; }
-        #options { margin-bottom: 24px; width: 400px; padding: 6px 12px; }
+        body { font-family: 'Segoe UI'; padding: 0 20px; margin: 0; }
+        h1, h2, h3, h4, h5 { font-family: 'Segoe UI'; font-weight: normal; margin: 0 0 5px; }
+        table { border-collapse: collapse; }
+            table td { border: 1px solid #808080; }
+        #options { margin-bottom: 5px; width: 400px; padding: 6px 12px; }
         #options label { display: block; float: left; width: 150px;  }
         #rate { width: 50px; }
         #stats div { clear: both; font-size: 18px; margin-left: 50px; }
@@ -23,9 +25,8 @@
             <label for="onReceive">On receive:</label>
             <select id="onReceive">
                 <option value="0">Listen only</option>
-                <option value="1">DirectEcho</option>
-                <option value="2">Echo</option>
-                <option value="3">Broadcast</option>
+                <option value="1">Echo</option>
+                <option value="2">Broadcast</option>
             </select>
         </div>
 
@@ -52,29 +53,46 @@
         </div>
     </fieldset>
 
-    <div id="stats">
-        
-    </div>
+    <table id="stats">
+        <thead><tr></tr></thead>
+        <tbody></tbody>
+    </table>
 
-    <script src="Scripts/jquery-1.7.1.js" type="text/javascript"></script>
-    <script src="Scripts/jquery.signalR.js" type="text/javascript"></script>
+    <script src="Scripts/jquery-1.7.2.js"></script>
+    <script src="Scripts/jquery.signalR-0.5pre.js"></script>
     <script src="signalr/hubs"></script>
     <script>
-
         var hub = $.connection.flywheel,
             $stats = $("#stats"),
             $onReceive = $("#onReceive"),
             $rate = $("#rate"),
             $payloadSize = $("#payloadSize");
-
+        
         hub.updateStats = function (stats) {
-            $stats.empty();
+            var $theadRow = $stats.find("thead > tr"),
+                $tbody = $stats.find("tbody"),
+                $tr = $("<tr></tr>"),
+                now = new Date();
+            
+            if (!$theadRow.find("th").length) {
+                // Init the header columns
+                $theadRow.append("<th>Time</th>");
+                $.each(stats, function (key, value) {
+                    $theadRow.append("<th>" + key + "</th>");
+                });
+            }
+
+            $tr.append("<td>" + now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds() + "</td>");
+
+            // Add the data columns for each stat field
             $.each(stats, function (key, value) {
                 if (typeof value === "number") {
                     value = value.toFixed(2);
                 }
-                $stats.append("<div><strong>" + key + ":</strong><span>" + value.toLocaleString() + "</span></div>");
+                $tr.append("<td>" + value + "</td>");
             });
+
+            $tbody.prepend($tr);
         };
 
         hub.onReceiveChanged = function (behavior) {
