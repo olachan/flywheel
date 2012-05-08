@@ -1,9 +1,46 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using SignalR.Hosting;
+using SignalR.Hubs;
 
 namespace SignalR.Flywheel
 {
+    public class ShaftHub : Hub, IConnected, IDisconnect
+    {
+        public Task Connect()
+        {
+            Stats.ConnectedClientsIds.TryAdd(Context.ConnectionId, null);
+            Interlocked.Increment(ref Stats.Connects);
+            Interlocked.Increment(ref Stats.ConnectedClients);
+            return TaskHelpers.Done;
+        }
+
+        public Task Reconnect(IEnumerable<string> groups)
+        {
+            return null;
+        }
+
+        public Task Disconnect()
+        {
+            object client;
+            Stats.ConnectedClientsIds.TryRemove(Context.ConnectionId, out client);
+            Interlocked.Increment(ref Stats.Disconnects);
+            Interlocked.Decrement(ref Stats.ConnectedClients);
+            return TaskHelpers.Done;
+        }
+
+        public Task Echo(string data)
+        {
+            return Caller.invoke(data);
+        }
+
+        public Task Broadcast(string data)
+        {
+            return Clients.invoke(data);
+        }
+    }
+
     public class Shaft : PersistentConnection
     {
         internal static EndpointBehavior Behavior { get; set; }
