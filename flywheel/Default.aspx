@@ -71,7 +71,7 @@
 
     <script src="Scripts/jquery-1.7.2.js"></script>
     <script src="Scripts/jquery.color.js"></script>
-    <script src="Scripts/jquery.signalR-0.5pre.js"></script>
+    <script src="Scripts/jquery.signalR-0.5rc.js"></script>
     <script src="Scripts/highcharts.src.js"></script>
     <script src="signalr/hubs"></script>
     <script>

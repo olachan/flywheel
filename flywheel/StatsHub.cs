@@ -20,11 +20,11 @@ namespace SignalR.Flywheel
         internal static void Init()
         {
             Stats.Init();
-            var clients = GlobalHost.ConnectionManager.GetClients<StatsHub>();
+            var context = GlobalHost.ConnectionManager.GetHubContext<StatsHub>();
             _updateTimer = new Timer(_ =>
             {
                 // Broadcast updated stats
-                clients.updateStats(Stats.GetStats());
+                context.Clients.updateStats(Stats.GetStats());
             }, null, _updateInterval, _updateInterval);
 
             SetBroadcastPayload();

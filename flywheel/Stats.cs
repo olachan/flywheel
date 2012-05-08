@@ -18,16 +18,13 @@ namespace SignalR.Flywheel
         private static bool _measuringRate;
         private static Timer _rateCounter;
         private static ConcurrentDictionary<string, object> _connectedClients;
-        private static Lazy<InProcessMessageBus> _messageBus =
-            new Lazy<InProcessMessageBus>(() =>
-                (InProcessMessageBus)GlobalHost.DependencyResolver.Resolve<IMessageBus>());
 
         public static void Init()
         {
             ResetAverage();
-            
+
             _connectedClients = new ConcurrentDictionary<string, object>();
-            
+
             _sw.Start();
 
             _rateCounter = new Timer(_ =>
@@ -45,7 +42,9 @@ namespace SignalR.Flywheel
                     _sw.Restart();
 
                     if (timeDiffSecs <= 0)
+                    {
                         return;
+                    }
 
                     var sent = Interlocked.Read(ref Sent);
                     var sendDiff = sent - _lastSendCount;
@@ -76,69 +75,13 @@ namespace SignalR.Flywheel
 
                     // Update tracked connected clients
                     ConnectedClientsTracking = _connectedClients.Count;
-
-                    //MessageStoreSize = _messageBus.Value.CurrentMessageCount(); 
                 }
                 finally
                 {
                     _measuringRate = false;
                 }
             }, null, 1000, 1000);
-            
-            //PersistentConnection.ClientConnected += (s) =>
-            //{
-            //    //Task.Factory.StartNew(() =>
-            //    //{
-            //    _connectedClients.TryAdd(s, null);
-            //        Interlocked.Increment(ref Connects);
-            //        Interlocked.Increment(ref ConnectedClients);
-            //    //});
-            //};
 
-            //PersistentConnection.ClientDisconnected += (s) =>
-            //{
-            //    //Task.Factory.StartNew(() =>
-            //    //{
-            //        object client;
-            //        _connectedClients.TryRemove(s, out client);
-            //        Interlocked.Increment(ref Disconnects);
-            //        Interlocked.Decrement(ref ConnectedClients);
-            //    //});
-            //};
-
-            //PersistentConnection.Sending += () =>
-            //{
-            //    //Task.Factory.StartNew(() =>
-            //    //{
-            //    //    Interlocked.Increment(ref Sent);
-            //    //});
-            //};
-
-            //PersistentConnection.Receiving += () =>
-            //{
-            //    //Task.Factory.StartNew(() =>
-            //    //{
-            //    //    Interlocked.Increment(ref Received);
-            //    //});
-            //};
-
-            //Connection.Sending += () =>
-            //{
-            //    //Task.Factory.StartNew(() =>
-            //    //{
-            //    //    Interlocked.Increment(ref Sent);
-            //    //});
-            //};
-
-            //Connection.MessagesPending += (sender, args) =>
-            //{
-            //    Interlocked.Increment(ref ConnectionsReturnedImmediately);
-            //};
-
-            //Connection.WaitingForSignal += (sender, args) =>
-            //{
-            //    Interlocked.Increment(ref ConnectionsSubscribedToSignal);
-            //};
 
             var onSending = new Action<string>(payload =>
             {
@@ -186,17 +129,13 @@ namespace SignalR.Flywheel
         public static long Received;
         public static double SendsPerSecond;
         public static double ReceivesPerSecond;
-        public static double TotalPerSecond;
         public static double AvgSendsPerSecond;
         public static double AvgReceivesPerSecond;
         public static double PeakSendsPerSecond;
         public static double PeakReceivesPerSecond;
-        public static long ConnectionsReturnedImmediately;
-        public static long ConnectionsSubscribedToSignal;
         public static long BytesSent;
         public static long BytesReceived;
         public static long BytesTotal;
-        public static long MessageStoreSize;
         public static long ConnectedClients;
         public static long ConnectedClientsTracking;
         public static long Connects;
@@ -210,7 +149,6 @@ namespace SignalR.Flywheel
                 Received,
                 SendsPerSecond,
                 ReceivesPerSecond,
-                TotalPerSecond,
                 AvgSentPerSecond = AvgSendsPerSecond,
                 AvgReceivedPerSecond = AvgReceivesPerSecond,
                 PeakSentPerSecond = PeakSendsPerSecond,
@@ -218,9 +156,6 @@ namespace SignalR.Flywheel
                 BytesSent,
                 BytesReceived,
                 BytesTotal,
-                MessageStoreSize,
-                ConnectionsReturnedImmediately,
-                ConnectionsSubscribedToSignal,
                 ConnectedClients,
                 ConnectedClientsTracking,
                 Connects,
