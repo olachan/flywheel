@@ -25,11 +25,11 @@ namespace SignalR.Flywheel
             return TaskHelpers.Done;
         }
 
-        protected override Task OnReceivedAsync(string connectionId, string data)
+        protected override Task OnReceivedAsync(IRequest request, string connectionId, string data)
         {
             if (Behavior == EndpointBehavior.Echo)
             {
-                Send(data);
+                Connection.Send(connectionId, data);
             }
             else if (Behavior == EndpointBehavior.Broadcast)
             {
