@@ -13,6 +13,8 @@ namespace SignalR.Flywheel
     {
         void Application_Start(object sender, EventArgs e)
         {
+            GlobalHost.Configuration.KeepAlive = TimeSpan.FromSeconds(30);
+
             RouteTable.Routes.MapConnection<Shaft>("shaft", "shaft/{*operation}");
             StatsHub.Init();
         }

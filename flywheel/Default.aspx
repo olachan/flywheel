@@ -93,8 +93,10 @@
                 var $theadRow = $stats.find("thead > tr"),
                     $tbody = $stats.find("tbody"),
                     $tr = $("<tr></tr>"),
-                    series = chart.series[0],
-                    shift = series.data.length > 20,
+                    series1 = chart.series[0],
+                    series2 = chart.series[1],
+                    shift1 = series1.data.length > 20,
+                    shift2 = series2.data.length > 20,
                     nowDate = new Date(),
                     now = nowDate.getHours() + ":" + nowDate.getMinutes() + ":" + nowDate.getSeconds();
 
@@ -121,7 +123,8 @@
                 $tr.animate({ backgroundColor: "#fff" }, 1000);
 
                 // Update chart
-                series.addPoint(stats.SendsPerSecond, /*redraw*/ true, shift);
+                series1.addPoint(stats.SendsPerSecond, /*redraw*/ true, shift1);
+                series2.addPoint(stats.AvgSentPerSecond, /*redraw*/true, shift2);
             };
 
             hub.onReceiveChanged = function (behavior) {
@@ -197,7 +200,7 @@
                     borderWidth: 0
                 },
 
-                series: [{ name: "Sends", data: [] }]
+                series: [{ name: "Sends", data: [] }, { name: "AvgSends", data: [] }]
             });
 
             $.connection.hub.start(init);
